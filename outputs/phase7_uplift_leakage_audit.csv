@@ -1,0 +1,12 @@
+feature,action,reasons
+campaign_channel,keep,none
+campaign_id,keep,none
+campaign_name,keep,none
+campaign_type,keep,none
+offer_strength,keep,none
+offer_type,keep,none
+pre_90d_aov,keep,none
+pre_90d_orders,keep,none
+pre_90d_revenue,keep,none
+predicted_business_segment_at_send,keep,none
+targeting_rule_source,keep,none

@@ -1,0 +1,11 @@
+check_name,failed_rows,expected_failed_rows,status,notes
+orders_without_customer,0,0,PASS,Order facts should resolve to customer dimension.
+order_items_without_order,0,0,PASS,Order item facts should resolve to order header.
+order_items_without_product,0,0,PASS,Order item facts should resolve to product dimension.
+returns_without_order_item,0,0,PASS,Returns should map back to transacted order items.
+campaign_targets_without_campaign,0,0,PASS,Campaign targeting should resolve to campaign metadata.
+campaign_events_without_target,0,0,PASS,Events should map to targeted campaign assignments.
+store_orders_without_store_id,0,0,PASS,Store channel orders should have a store id.
+store_orders_store_not_found,0,0,PASS,Store ids in orders should resolve to store dimension.
+inventory_without_product,0,0,PASS,Inventory snapshots should resolve to products.
+prices_without_product,0,0,PASS,Price snapshots should resolve to products.

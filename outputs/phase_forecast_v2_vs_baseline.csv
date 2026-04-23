@@ -1,0 +1,4 @@
+metric,baseline_model,baseline_value,v2_value,delta_v2_minus_baseline,pct_improvement,note
+mae,rf_feature_model_quality,1.251205606986298,1.2336473460717612,-0.017558260914536827,1.4033074033953805,"baseline=RF (phase8, 14 features, no leakage fix); V2=LightGBM Tweedie, lagged rolling means, series baselines, cyclical calendar, inventory flags, short-series filter"
+rmse,rf_feature_model_quality,1.849581975034202,1.8268958925282168,-0.02268608250598514,1.2265518810306115,"baseline=RF (phase8, 14 features, no leakage fix); V2=LightGBM Tweedie, lagged rolling means, series baselines, cyclical calendar, inventory flags, short-series filter"
+smape,rf_feature_model_quality,0.4676539724053862,0.456197596042939,-0.011456376362447174,2.4497549552548663,"baseline=RF (phase8, 14 features, no leakage fix); V2=LightGBM Tweedie, lagged rolling means, series baselines, cyclical calendar, inventory flags, short-series filter"

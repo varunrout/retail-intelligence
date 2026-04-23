@@ -1,0 +1,8 @@
+chart,path
+churn_distribution,C:\Users\USER\Documents\Python Projects\retail-intelligence\outputs\phase5_chart_churn_distribution.png
+demand_trend_by_category,C:\Users\USER\Documents\Python Projects\retail-intelligence\outputs\phase5_chart_demand_trend_by_category.png
+return_rate_by_discount_band,C:\Users\USER\Documents\Python Projects\retail-intelligence\outputs\phase5_chart_return_rate_by_discount_band.png
+campaign_response_by_segment,C:\Users\USER\Documents\Python Projects\retail-intelligence\outputs\phase5_chart_campaign_response_by_segment.png
+customer_segment_scatter,C:\Users\USER\Documents\Python Projects\retail-intelligence\outputs\phase5_chart_customer_segment_scatter.png
+feature_importance_churn,C:\Users\USER\Documents\Python Projects\retail-intelligence\outputs\phase5_chart_feature_importance_churn.png
+forecast_vs_actual,C:\Users\USER\Documents\Python Projects\retail-intelligence\outputs\phase5_chart_forecast_vs_actual.png

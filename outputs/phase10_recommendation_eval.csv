@@ -1,0 +1,4 @@
+method,hit_rate_at_k,mrr_at_k,k
+Popularity (global),0.0036,0.0016,10
+Content-Based (cosine),0.0062,0.0022,10
+Collab Filter (SVD-50),0.0104,0.0035,10

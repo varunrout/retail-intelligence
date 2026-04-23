@@ -1,0 +1,15 @@
+feature
+campaign_id
+campaign_name
+campaign_type
+campaign_channel
+offer_type
+offer_strength
+predicted_business_segment_at_send
+targeting_rule_source
+pre_90d_orders
+pre_90d_revenue
+pre_90d_aov
+assignment_month
+assignment_dayofweek
+assignment_hour

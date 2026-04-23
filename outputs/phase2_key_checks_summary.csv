@@ -1,0 +1,17 @@
+table_name,key_columns,row_count,distinct_key_count,duplicate_rows_on_key,key_null_rows,key_null_rate
+calendar,date,731,731,0,0,0.0
+campaign_events,"campaign_id,customer_id",102798,102593,205,0,0.0
+campaign_targets,"campaign_id,customer_id",102593,102593,0,0,0.0
+campaigns,campaign_id,12,12,0,0,0.0
+customers,customer_id,50000,50000,0,0,0.0
+daily_inventory,"date,product_id,store_id_or_online",6278529,6278529,0,0,0.0
+daily_prices,"date,product_id,store_id_or_online",6278529,6278529,0,0,0.0
+order_items,order_item_id,1385760,1385760,0,0,0.0
+orders,order_id,531244,531244,0,0,0.0
+product_attributes,product_id,5000,5000,0,0,0.0
+products,product_id,5000,5000,0,0,0.0
+returns,return_id,188399,188399,0,0,0.0
+reviews,review_id,195876,195876,0,0,0.0
+session_events,event_id,2299566,2299566,0,0,0.0
+stores,store_id,60,60,0,0,0.0
+web_sessions,session_id,563578,563578,0,0,0.0

@@ -1,0 +1,5 @@
+metric,baseline_best_model,baseline_value,v2_value,delta_v2_minus_baseline,note
+overall_ate_test,t_learner_rf,0.0423819526962707,0.044366344372566174,0.001984391676295473,"baseline=T-learner logreg/RF, 14 raw campaign features; V2=X-learner LightGBM, enriched features, per-campaign stratification"
+top3_decile_observed_uplift,t_learner_rf,0.0397926882220928,,,"baseline=T-learner logreg/RF, 14 raw campaign features; V2=X-learner LightGBM, enriched features, per-campaign stratification"
+top5_decile_observed_uplift,t_learner_rf,0.0536615300976803,0.045022879146629426,-0.008638650951050875,"baseline=T-learner logreg/RF, 14 raw campaign features; V2=X-learner LightGBM, enriched features, per-campaign stratification"
+qini_like_area,t_learner_rf,502.4753658605696,744.8096057026382,242.33423984206865,"baseline=T-learner logreg/RF, 14 raw campaign features; V2=X-learner LightGBM, enriched features, per-campaign stratification"

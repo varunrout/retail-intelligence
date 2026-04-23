@@ -1,0 +1,17 @@
+table_name,row_count,column_count,candidate_key,canonical_date_column,date_min,date_max
+calendar,731,13,date,date,2024-01-01 00:00:00,2025-12-31 00:00:00
+campaign_events,102798,10,"campaign_id,customer_id",,,
+campaign_targets,102593,8,"campaign_id,customer_id",assignment_datetime,2024-04-15 08:00:00,2025-12-10 21:59:00
+campaigns,12,10,campaign_id,start_date,2024-03-10 00:00:00,2025-12-10 00:00:00
+customers,50000,13,customer_id,signup_date,2022-07-10 00:00:00,2025-12-21 00:00:00
+daily_inventory,6278529,8,"date,product_id,store_id_or_online",date,2024-01-01 00:00:00,2025-12-31 00:00:00
+daily_prices,6278529,8,"date,product_id,store_id_or_online",date,2024-01-01 00:00:00,2025-12-31 00:00:00
+order_items,1385760,10,order_item_id,,,
+orders,531244,19,order_id,order_datetime,2024-01-01 08:02:00,2025-12-28 21:59:00
+product_attributes,5000,8,product_id,,,
+products,5000,13,product_id,launch_date,2021-07-15 00:00:00,2025-12-31 00:00:00
+returns,188399,9,return_id,return_request_date,2024-01-03 00:00:00,2026-02-06 00:00:00
+reviews,195876,8,review_id,review_date,2024-01-04 00:00:00,2026-02-26 00:00:00
+session_events,2299566,7,event_id,event_time,2024-01-01 04:51:00,2025-12-31 22:39:00
+stores,60,9,store_id,opening_date,2020-04-12 00:00:00,2025-10-29 00:00:00
+web_sessions,563578,13,session_id,session_start,2024-01-01 04:51:00,2025-12-31 22:00:00

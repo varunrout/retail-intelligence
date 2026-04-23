@@ -1,0 +1,20 @@
+{
+  "n_total": 50000,
+  "n_buyer_clusters": 3,
+  "n_total_segments": 4,
+  "silhouette_buyers": 0.2925,
+  "davies_bouldin_buyers": 1.5916,
+  "churn_spread_pp": 43.93,
+  "cluster_sizes": {
+    "0": 24352,
+    "1": 5187,
+    "2": 14893,
+    "3": 5568
+  },
+  "segment_names": {
+    "0": "Champions",
+    "1": "Mid-Tier Active",
+    "2": "Dormant Buyers",
+    "3": "Non-Purchasers"
+  }
+}

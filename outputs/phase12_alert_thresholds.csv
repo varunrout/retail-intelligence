@@ -1,0 +1,12 @@
+pipeline,metric,baseline,warn_threshold,alert_threshold,eval_window,rationale
+P01 Churn,AUC-ROC,0.896,0.87,0.85,4 weeks rolling,5% relative AUC drop is operationally significant for CRM targeting
+P01 Churn,Precision@0.3_threshold,0.432,0.38,0.33,4 weeks rolling,Retention offers become unprofitable if too many non-churners are targeted
+P02 Uplift,Top3Decile_uplift,0.18,0.13,0.1,4 weeks rolling,Campaign ROI requires incremental uplift in targeted deciles
+P02 Uplift,ATE_test,0.043,0.02,0.0,8 weeks rolling,Negative ATE means the campaign is hurting response rate
+P03 Forecast,RMSE,1.85,2.3,2.7,2 weeks rolling,RMSE above naive baseline (2.172) signals model deterioration
+P03 Forecast,SMAPE_pct,50.5,60.0,70.0,2 weeks rolling,SMAPE above 70% indicates forecast is unusable for replenishment
+P04 Segmentation,Silhouette,0.2515,0.2,0.18,Monthly,Low silhouette means segments are not well-separated; CRM lists lose value
+P04 Segmentation,Champions_segment_size_pct,17.0,10.0,5.0,Monthly,Large Champions shrinkage indicates customer base deterioration or data issue
+P05 Recommendations,HitRate@10,0.0104,0.008,0.006,2 weeks rolling,Below 0.006 approaches content-based baseline; personalisation value is lost
+P06 Anomaly,Daily_flag_rate_pct,1.0,3.0,5.0,3-day rolling,Flag rate spike indicates a data anomaly or model degradation; overwhelms risk ops
+P06 Anomaly,Daily_flag_rate_pct_floor,1.0,0.4,0.2,3-day rolling,Flag rate too low means model stopped scoring or data feed is missing

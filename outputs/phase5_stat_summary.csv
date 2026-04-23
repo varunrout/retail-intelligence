@@ -1,0 +1,10 @@
+metric,estimate,ci_lower,ci_upper,test
+avg_order_value,126.87238618537785,126.2435203842016,127.5012519865541,mean_ci
+campaign_response_rate_30d,0.19282017291628084,0.19040609874188807,0.1952342470906736,proportion_ci
+return_rate_item_level,0.15114094368927053,0.15051214921417969,0.15176973816436137,proportion_ci
+weekly_units_mean,2.2392472403868853,2.2350678862789346,2.243426594494836,mean_ci
+t_test_item_net_price_deep_vs_low_discount,-133.3826960803843,,,p_value=0.000000
+z_test_treatment_vs_control_response_30d,12.727820850211636,,,p_value=0.000000;uplift=0.042382
+acf_lag_1,0.6671935790383704,,,acf
+acf_lag_4,0.6467218855315728,,,acf
+bayesian_treatment_conversion_posterior_mean,0.19975994313215947,0.19709152459941862,0.20244161713480513,beta_posterior_95_credible_interval

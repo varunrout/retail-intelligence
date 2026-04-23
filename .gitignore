@@ -1,0 +1,35 @@
+# ── Data (large raw / processed files — not committed) ────────────────────
+data/
+
+# ── Python environment ─────────────────────────────────────────────────────
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# ── Jupyter ────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ── Testing / coverage ─────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── OS / editor artefacts ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+*.swp
+*.swo
+
+# ── Secrets / env ─────────────────────────────────────────────────────────
+.env
+.env.*
+secrets.json

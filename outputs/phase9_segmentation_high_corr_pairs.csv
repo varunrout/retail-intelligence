@@ -1,0 +1,12 @@
+feature_a,feature_b,corr,abs_corr
+total_sessions,sessions_with_purchase,0.9496358009388997,0.9496358009388997
+total_orders,total_units,0.930927406449523,0.930927406449523
+total_orders,sessions_with_purchase,0.9148245281962075,0.9148245281962075
+total_net_revenue,total_units,0.8780833920113442,0.8780833920113442
+total_orders,total_sessions,0.8680968657905566,0.8680968657905566
+total_units,sessions_with_purchase,0.8633984986995055,0.8633984986995055
+total_orders,total_net_revenue,0.8553519683973183,0.8553519683973183
+total_units,total_sessions,0.8199824921764277,0.8199824921764277
+total_net_revenue,sessions_with_purchase,0.795365570080607,0.795365570080607
+total_net_revenue,total_sessions,0.7557796354895653,0.7557796354895653
+avg_session_minutes,avg_pages_viewed,0.720825231451722,0.720825231451722

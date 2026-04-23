@@ -1,0 +1,7 @@
+mart_name,total_checks,failed_checks,status
+mart_campaign_response,13,0,PASS
+mart_customer_features,17,0,PASS
+mart_product_demand,15,0,PASS
+mart_recommendation_interactions,13,0,PASS
+mart_returns_risk,16,0,PASS
+mart_store_week_performance,16,0,PASS

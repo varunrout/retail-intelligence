@@ -1,0 +1,7 @@
+pipeline,phase,best_model,primary_metric,metric_value,cadence
+P01 Churn,6,rf_balanced,AUC-ROC,0.8656,Weekly
+P02 Uplift,7,t_learner_logreg,Top3Decile_uplift,0.0524,Weekly
+P03 Forecast,8,rf_feature_model_quality,RMSE,1.8496,Weekly
+P04 Segmentation,9,PCA+KMeans k=4,Silhouette,0.2515,Monthly
+P05 Recommendations,10,Collab Filter (SVD-50),HitRate@10,0.0104,Weekly
+P06 Anomaly,11,Isolation Forest,F1,0.1174,Daily
