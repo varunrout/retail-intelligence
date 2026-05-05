@@ -1,0 +1,13 @@
+feature,importance
+item_net_price,5425035.560601115
+prior_customer_return_rate,1030810.4880896807
+customer_item_recency_rank,538508.0854567289
+is_suspected_abuse_reason,365881.76095724106
+item_discount_pct,162177.3267543316
+item_margin,64223.19495284557
+recent_product_return_events,40883.86844396591
+refund_amount,38348.47941029072
+days_to_return,29033.217298030853
+is_electronics,3694.75710272789
+is_high_risk_band,1403.669076681137
+is_low_discount,988.5014941692352

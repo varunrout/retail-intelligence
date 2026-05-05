@@ -1,0 +1,6 @@
+metric,phase11_method,phase11_value,v2_value,delta_v2_minus_baseline,note
+ap,Isolation Forest,0.058,0.58,0.522,Average precision on full return universe
+precision,IQR / Rules,0.0274,0.3316,0.3042,At 1% flag rate (p11 at 12% flag rate)
+recall,IQR / Rules,0.4601,0.7862,0.3261,At 1% flag rate (p11 at 12% flag rate)
+flag_rate_pct,IQR / Rules,12.04,1.0,-11.04,Fraction of returns flagged for review (lower = more targeted)
+f1,Isolation Forest,0.1174,0.4664,0.349,F1 at 1% flag rate

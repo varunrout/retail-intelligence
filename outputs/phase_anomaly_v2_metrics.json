@@ -1,0 +1,30 @@
+{
+  "ap": 0.5800456859065062,
+  "flagged": 377,
+  "flag_rate_pct": 1.0,
+  "precision": 0.33156498673740054,
+  "recall": 0.7861635220125787,
+  "f1": 0.4664179104477613,
+  "threshold": 0.0017012733482761088,
+  "split_date": "2025-09-26",
+  "n_train": 150719,
+  "n_test": 37680,
+  "train_prevalence": 0.007915,
+  "test_prevalence": 0.00422,
+  "scale_pos_weight": 125.34,
+  "n_features": 12,
+  "feature_names": [
+    "item_net_price",
+    "refund_amount",
+    "prior_customer_return_rate",
+    "item_discount_pct",
+    "customer_item_recency_rank",
+    "item_margin",
+    "recent_product_return_events",
+    "days_to_return",
+    "is_suspected_abuse_reason",
+    "is_electronics",
+    "is_low_discount",
+    "is_high_risk_band"
+  ]
+}

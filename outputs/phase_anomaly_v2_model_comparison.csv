@@ -1,0 +1,5 @@
+method,type,flag_rate_pct,precision,recall,f1,ap
+IQR / Rules,unsupervised,12.04,0.0274,0.4601,0.0518,0.0165
+Isolation Forest,unsupervised,1.0,0.1008,0.1405,0.1174,0.058
+LOF (n=20),unsupervised,1.0,0.168,0.0621,0.0907,0.0799
+LightGBM V2,supervised,1.0,0.3316,0.7862,0.4664,0.58

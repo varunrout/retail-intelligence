@@ -1,0 +1,11 @@
+{
+  "hit_rate_at_10": 0.120354,
+  "mrr_at_10": 0.060569,
+  "n_evaluated": 30884,
+  "svd_k": 200,
+  "alpha": 0.8,
+  "cold_start_threshold": 5,
+  "cold_start_customers": 5017,
+  "phase10_hit_rate_at_10": 0.0104,
+  "improvement_factor": 11.57
+}
