@@ -12,9 +12,11 @@ full pytest suite run against real, reproducible data.
 from __future__ import annotations
 
 import argparse
+import sys
 
+from src.config import RAW_DIR
 from src.data import run_phase3_marts
-from src.data.generate import SCALES, Config, generate
+from src.data.generate import SCALES, Config, generate, raw_data_exists
 
 
 def main() -> None:
@@ -26,9 +28,21 @@ def main() -> None:
     p.add_argument("--months", type=int, default=None)
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--skip-generate", action="store_true", help="reuse existing data/raw")
+    p.add_argument("--force", action="store_true", help="overwrite existing data/raw")
     args = p.parse_args()
 
     if not args.skip_generate:
+        # Safety guard: never silently overwrite an existing dataset. data/ is
+        # gitignored and regenerable, but clobbering it without asking is rude.
+        if raw_data_exists(RAW_DIR) and not args.force:
+            print(
+                f"Refusing to overwrite existing data in {RAW_DIR} (customers.csv present).\n"
+                "  Pass --force to regenerate and overwrite it, or\n"
+                "  --skip-generate to rebuild the marts from the data already there.",
+                file=sys.stderr,
+            )
+            raise SystemExit(2)
+
         preset = SCALES[args.scale]
         cfg = Config(
             n_customers=args.n_customers or preset["n_customers"],

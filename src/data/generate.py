@@ -55,6 +55,11 @@ class Config:
     seed: int
 
 
+def raw_data_exists(raw_dir=RAW_DIR) -> bool:
+    """True if a generated dataset is already present (guards overwrites)."""
+    return (raw_dir / "customers.csv").exists()
+
+
 def _dt(series: pd.Series) -> pd.Series:
     return pd.to_datetime(series)
 
@@ -709,7 +714,18 @@ def main() -> None:
     p.add_argument("--n-stores", type=int, default=None)
     p.add_argument("--months", type=int, default=None)
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--force", action="store_true", help="overwrite existing data/raw")
     args = p.parse_args()
+
+    if raw_data_exists() and not args.force:
+        import sys
+
+        print(
+            f"Refusing to overwrite existing data in {RAW_DIR} (customers.csv present). "
+            "Pass --force to overwrite.",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
 
     preset = SCALES[args.scale]
     cfg = Config(
