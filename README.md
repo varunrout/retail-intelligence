@@ -53,33 +53,38 @@ across moving parts.
 
 ## Reproduce
 
-Data (raw CSVs ~1GB and the built marts) is gitignored. With the marts present
-under `data/processed/`:
+Data (raw CSVs and built marts) is synthetic and gitignored. A committed
+generator rebuilds it from scratch, so a fresh clone runs end to end:
 
 ```bash
 pip install -r requirements.txt
 export PYTHONPATH=.
 
+# Build reproducible data from nothing: generate raw tables -> DuckDB marts.
+make build            # full default scale  (or: python -m src.data.build)
+make sample           # tiny dataset, seconds, used by CI
+
 # Re-run a model end to end (marts -> features -> model -> outputs/)
 python -m src.data.run_phase_churn_v2
 python -m src.data.run_phase_uplift_v2
 
-# The honest re-evaluations (each has a --smoke mode needing no data)
+# The honest re-evaluations (each also has a --smoke mode needing no data)
 python -m analysis.churn_incremental_lift        # matched churn baseline vs V2 + CI
 python -m analysis.churn_calibration             # reliability + calibrated Brier
 python -m analysis.uplift_targeting_decision     # who gets an offer
+python -m analysis.forecast_naive_baseline       # naive benchmarks
 
-pytest            # data tests skip if marts absent; unit tests always run
-ruff check . && ruff format --check .
+make test             # pytest (data tests run once marts are built)
+make lint             # ruff check + format check
 ```
 
-`--smoke` runs the analysis scripts on synthetic in-memory data, so they work on a
-clean clone with no marts.
-
-> Reproducibility gap (known): a committed raw-data generator is not yet in the
-> repo, so a fresh clone cannot rebuild `data/processed` from scratch. Tracked in
-> FIXES.md (RETA-02). The analysis scripts' `--smoke` mode and the unit tests are
-> the parts that run with no data at all.
+The generator (`src/data/generate.py`) is deterministic and scalable
+(`--scale sample|default|full`, `--seed`). It plants real signal: engagement
+drives churn recency, a latent persuadability drives heterogeneous uplift, weekly
+demand has seasonality and trend, and a small fraction of returns are abuse
+(~0.7%, written to `returns_hidden_labels.csv`). CI builds the sample dataset and
+runs the full suite on every push, so reproducibility is enforced, not just
+claimed.
 
 ## Results to files
 
@@ -105,6 +110,8 @@ clean clone with no marts.
 
 - Data is synthetic; supervised metrics (notably returns-anomaly AP) are optimistic
   because labels and features share a generative process.
-- No committed raw-data generator yet (see above).
+- The generated data reproduces the pipeline and realistic metrics, but is not the
+  exact dataset the committed `outputs/` were first produced from, so regenerated
+  numbers will differ slightly from the committed CSVs.
 - The baseline phase6-11 notebooks are superseded by the V2 layer and the analysis
   re-evaluations; treat the `analysis/` results and the docs above as authoritative.
