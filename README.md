@@ -96,6 +96,12 @@ claimed.
 | Uplift decile table + Qini | `outputs/phase_uplift_v2_decile_summary.csv`, `outputs/phase_uplift_v2_vs_baseline.csv` |
 | Uplift targeting decision | `outputs/uplift_targeting_decision.csv` |
 
+## Combined view
+
+`analysis/customer_360.py` joins churn, uplift, segment and recommendations
+into one recommended action per customer — see
+[docs/customer_360.md](docs/customer_360.md) for coverage caveats and how to run it.
+
 ## Repository layout
 
 - `sql/` — raw-to-mart SQL, one script per mart plus shared staging.

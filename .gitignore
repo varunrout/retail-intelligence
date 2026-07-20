@@ -30,6 +30,7 @@ htmlcov/
 .DS_Store
 Thumbs.db
 .vscode/settings.json
+.idea/
 *.swp
 *.swo
 

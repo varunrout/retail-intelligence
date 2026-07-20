@@ -368,7 +368,9 @@ def train_xlearner(
         "tau1": tau1_bst.best_iteration or num_boost_round,
         "tau0": tau0_bst.best_iteration or num_boost_round,
     }
-    print(f"  τ₁ best iter={stage2_best_iters['tau1']}  τ₀ best iter={stage2_best_iters['tau0']}")
+    print(
+        f"  tau1 best iter={stage2_best_iters['tau1']}  tau0 best iter={stage2_best_iters['tau0']}"
+    )
 
     return XLearnerModel(
         tau1=tau1_bst,
