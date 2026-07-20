@@ -29,6 +29,11 @@ jobs:
         run: python -m src.data.build --scale sample
       - name: Test
         run: pytest --cov=src --cov-report=term-missing
+      - name: Coverage gate (src/features, src/models)
+        # Feature builders and trainers had zero test coverage; this fails the
+        # build if that regresses below 60%. src/data (loaders/validators) and
+        # src/data/generate.py are covered separately, above.
+        run: pytest --cov=src.features --cov=src.models --cov-report=term-missing --cov-fail-under=60 -q
 
   clean-install:
     runs-on: ubuntu-latest
