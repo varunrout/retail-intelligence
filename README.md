@@ -76,6 +76,11 @@ python -m analysis.forecast_naive_baseline       # naive benchmarks
 
 make test             # pytest (data tests run once marts are built)
 make lint             # ruff check + format check
+make eval             # retrain all six V2 models, check metrics vs committed outputs/
+
+# Optional: catch lint/format drift before it reaches CI
+pip install pre-commit
+pre-commit install
 ```
 
 The generator (`src/data/generate.py`) is deterministic and scalable
@@ -95,6 +100,13 @@ claimed.
 | Churn calibration (Brier, reliability) | `outputs/churn_calibration_brier.csv`, `outputs/churn_calibration_reliability.png` |
 | Uplift decile table + Qini | `outputs/phase_uplift_v2_decile_summary.csv`, `outputs/phase_uplift_v2_vs_baseline.csv` |
 | Uplift targeting decision | `outputs/uplift_targeting_decision.csv` |
+| Forecast vs RF baseline + naive benchmarks | `outputs/phase_forecast_v2_vs_baseline.csv`, `outputs/forecast_naive_baseline.csv` |
+
+## Combined view
+
+`analysis/customer_360.py` joins churn, uplift, segment and recommendations
+into one recommended action per customer — see
+[docs/customer_360.md](docs/customer_360.md) for coverage caveats and how to run it.
 
 ## Combined view
 
@@ -111,6 +123,8 @@ into one recommended action per customer — see
 - `docs/` — design docs and the reconciliation write-ups.
 - `tests/` — schema/validator unit tests (always run) and mart tests (skip without data).
 - `outputs/` — generated metrics, tables and charts.
+
+See [CHANGELOG.md](CHANGELOG.md) for the phase-by-phase build history.
 
 ## Limitations
 
