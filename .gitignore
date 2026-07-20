@@ -1,5 +1,9 @@
 # ── Data (large raw / processed files — not committed) ────────────────────
-data/
+# Anchored to the repo-root data/ directory ONLY. An unanchored `data/` also
+# matched src/data/, which silently excluded the entire src/data package from
+# the repo (loaders, schemas, validators, phase runners) and broke every
+# clone: imports, pytest collection and the pipeline runners.
+/data/
 
 # ── Python environment ─────────────────────────────────────────────────────
 .venv/
