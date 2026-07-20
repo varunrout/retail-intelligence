@@ -4,6 +4,7 @@ Decisions encoded here are documented and justified in
 ``analysis_notebooks/forecast_analysis.ipynb``. Each feature set choice has a
 finding number tying it back to the analysis.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -25,22 +26,22 @@ SPLIT_WEEK: str = "2025-08-04"
 
 # ── Forbidden columns — same-week outcomes / leakage (Finding 2.A) ────────
 FORBIDDEN_FEATURES: set[str] = {
-    "rolling_4w_avg_units",   # F2.A: mean incl. current week (100% match = leakage)
-    "rolling_4w_revenue",     # F2.A: same leakage source
-    "order_line_count",       # same-week order count
-    "net_revenue",            # same-week revenue
+    "rolling_4w_avg_units",  # F2.A: mean incl. current week (100% match = leakage)
+    "rolling_4w_revenue",  # F2.A: same leakage source
+    "order_line_count",  # same-week order count
+    "net_revenue",  # same-week revenue
     "avg_item_discount_pct",  # realised same-week discount rate
-    "avg_discount_pct",       # realised same-week discount rate
-    "avg_ending_inventory",   # end-of-week measurement
-    "stockout_days",          # within-week measurement
-    "backorder_days",         # within-week measurement
-    "stock_received_units",   # within-week receipt
-    "weekly_demand_band",     # derived from units_sold (target)
+    "avg_discount_pct",  # realised same-week discount rate
+    "avg_ending_inventory",  # end-of-week measurement
+    "stockout_days",  # within-week measurement
+    "backorder_days",  # within-week measurement
+    "stock_received_units",  # within-week receipt
+    "weekly_demand_band",  # derived from units_sold (target)
 }
 
 # ── Static product attributes (safe — no temporal leakage) ────────────────
 STATIC_FEATURES: list[str] = [
-    "category",       # F5.A: large inter-category sMAPE spread
+    "category",  # F5.A: large inter-category sMAPE spread
     "subcategory",
     "price_tier",
     "seasonal_flag",
@@ -58,33 +59,33 @@ PROMO_FEATURES: list[str] = [
 # F4.C: avg_starting_inventory r=0.168; add binary null flag.
 INVENTORY_FEATURES: list[str] = [
     "avg_starting_inventory",
-    "has_inventory",       # engineered: 1 if inventory data present, else 0
+    "has_inventory",  # engineered: 1 if inventory data present, else 0
 ]
 
 # ── Lag features — mart-native + engineered additional lags (F4.A / F6.C) ─
 LAG_FEATURES: list[str] = [
-    "lag_1w_units_sold",   # already in mart
-    "lag_2w",              # engineered
-    "lag_3w",              # engineered
-    "lag_4w_units_sold",   # already in mart
-    "lag_8w",              # engineered
-    "lag_13w",             # engineered
-    "lag_52w",             # engineered — F6.C: ~50% coverage (YoY anchor)
-    "has_yoy_lag",         # engineered: 1 if lag_52w is non-null, else 0
+    "lag_1w_units_sold",  # already in mart
+    "lag_2w",  # engineered
+    "lag_3w",  # engineered
+    "lag_4w_units_sold",  # already in mart
+    "lag_8w",  # engineered
+    "lag_13w",  # engineered
+    "lag_52w",  # engineered — F6.C: ~50% coverage (YoY anchor)
+    "has_yoy_lag",  # engineered: 1 if lag_52w is non-null, else 0
 ]
 
 # ── Lagged rolling means — backward-looking, highest-signal features (F6.B) ─
 # roll_Xw_avg = mean of lag_1 through lag_X (no current-week data).
 ROLLING_FEATURES: list[str] = [
-    "roll_2w_avg",    # mean(lag_1, lag_2)
-    "roll_8w_avg",    # mean(lag_1 … lag_8)
-    "roll_13w_avg",   # mean(lag_1 … lag_13)
+    "roll_2w_avg",  # mean(lag_1, lag_2)
+    "roll_8w_avg",  # mean(lag_1 … lag_8)
+    "roll_13w_avg",  # mean(lag_1 … lag_13)
 ]
 
 # ── Series-level baseline demand — computed from train set only (F6.A) ────
 SERIES_MEAN_FEATURES: list[str] = [
-    "product_mean_demand",   # mean units_sold per product_id on train
-    "store_mean_demand",     # mean units_sold per store on train
+    "product_mean_demand",  # mean units_sold per product_id on train
+    "store_mean_demand",  # mean units_sold per store on train
 ]
 
 # ── Calendar cyclical encoding (F4.B) ─────────────────────────────────────
@@ -169,8 +170,8 @@ def build_lag_features(df: pd.DataFrame) -> pd.DataFrame:
     # ── Lagged rolling means (F6.B) ───────────────────────────────────────
     # shift(1) ensures the window starts at lag_1 (no current-week data).
     for window, col, min_p in [
-        (2,  "roll_2w_avg",  1),
-        (8,  "roll_8w_avg",  4),
+        (2, "roll_2w_avg", 1),
+        (8, "roll_8w_avg", 4),
         (13, "roll_13w_avg", 6),
     ]:
         out[col] = out.groupby(SERIES_KEYS, sort=False)["units_sold"].transform(
@@ -203,10 +204,7 @@ def compute_series_means(train_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataF
         Columns: ``store_id_or_online``, ``store_mean_demand``.
     """
     product_means = (
-        train_df.groupby("product_id")[LABEL]
-        .mean()
-        .rename("product_mean_demand")
-        .reset_index()
+        train_df.groupby("product_id")[LABEL].mean().rename("product_mean_demand").reset_index()
     )
     store_means = (
         train_df.groupby("store_id_or_online")[LABEL]

@@ -22,6 +22,7 @@ V2 improvements over phase9:
   Finding 5.C  PCA components — 5 components capture 80 % of variance on V2
                features (phase9 needed 6 with raw skewed features).
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -77,28 +78,29 @@ SESSION_COLS: list[str] = [
 # V2 buyer feature set used for clustering the buyer sub-population
 # (Applied AFTER non-purchasers are split off — Finding 6.B / nested approach)
 BUYER_FEATURES: list[str] = [
-    "log_total_orders",        # F1.C / F4.A: volume, log-transformed
-    "log_total_net_revenue",   # revenue, log-transformed
-    "avg_order_value",         # basket value (moderate skew, kept raw)
-    "log_recency_days",        # F4.A: recency, log-transformed
-    "log_tenure_days",         # customer age, log-transformed
-    "avg_item_discount_pct",   # discount affinity
-    "return_rate_per_unit",    # returns behaviour
-    "log_total_sessions",      # browse engagement, log-transformed
-    "avg_session_minutes",     # session depth
-    "avg_pages_viewed",        # browse intensity
-    "purchase_rate",           # F4.B: sessions_with_purchase / total_sessions
-    "online_order_share",      # channel preference (web vs in-store)
-    "order_rate_per_month",    # F4.B: purchase velocity
+    "log_total_orders",  # F1.C / F4.A: volume, log-transformed
+    "log_total_net_revenue",  # revenue, log-transformed
+    "avg_order_value",  # basket value (moderate skew, kept raw)
+    "log_recency_days",  # F4.A: recency, log-transformed
+    "log_tenure_days",  # customer age, log-transformed
+    "avg_item_discount_pct",  # discount affinity
+    "return_rate_per_unit",  # returns behaviour
+    "log_total_sessions",  # browse engagement, log-transformed
+    "avg_session_minutes",  # session depth
+    "avg_pages_viewed",  # browse intensity
+    "purchase_rate",  # F4.B: sessions_with_purchase / total_sessions
+    "online_order_share",  # channel preference (web vs in-store)
+    "order_rate_per_month",  # F4.B: purchase velocity
 ]
 
 # PCA settings (Finding 5.C)
-PCA_N_COMPONENTS: int = 5   # 80 % variance on V2 log-feature set
+PCA_N_COMPONENTS: int = 5  # 80 % variance on V2 log-feature set
 
 
 # ---------------------------------------------------------------------------
 # Engineering helpers
 # ---------------------------------------------------------------------------
+
 
 def engineer_features(cust: pd.DataFrame) -> pd.DataFrame:
     """Return an enriched copy of *cust* with V2 derived columns.
@@ -154,6 +156,7 @@ def engineer_features(cust: pd.DataFrame) -> pd.DataFrame:
 # Dataclass for fitted pipeline
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class SegmentationPipeline:
     """Holds the fitted scaler + PCA objects for the buyer sub-population.
@@ -171,9 +174,7 @@ class SegmentationPipeline:
     """
 
     scaler: StandardScaler = field(default_factory=StandardScaler)
-    pca: PCA = field(default_factory=lambda: PCA(
-        n_components=PCA_N_COMPONENTS, random_state=42
-    ))
+    pca: PCA = field(default_factory=lambda: PCA(n_components=PCA_N_COMPONENTS, random_state=42))
     buyer_features: list[str] = field(default_factory=lambda: list(BUYER_FEATURES))
     pca_n_components: int = PCA_N_COMPONENTS
 

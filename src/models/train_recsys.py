@@ -7,31 +7,27 @@ Design decisions confirmed by recsys_analysis.ipynb:
   - Best hybrid: alpha=0.8 CF + 0.2 CB (confirmed by §7; hit@10=0.1225)
   - Eval: hit_rate@10 and MRR@10 on novel test products only
 """
-from __future__ import annotations
 
-from typing import Dict, List, Optional, Set
+from __future__ import annotations
 
 import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import svds
-from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import LabelEncoder
 
 from src.features.features_recsys import (
     InteractionData,
-    COLD_START_THRESHOLD,
-    build_content_matrix,
-    category_top_n_popularity,
     get_customer_categories,
 )
 
 # Best hyperparameters from analysis notebook
-BEST_K     = 200
-BEST_ALPHA = 0.8    # CF × alpha + CB × (1 - alpha)
+BEST_K = 200
+BEST_ALPHA = 0.8  # CF × alpha + CB × (1 - alpha)
 
 
 # ── Model training ────────────────────────────────────────────────────────────
+
 
 def train_svd(R: csr_matrix, k: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
@@ -54,12 +50,13 @@ def train_svd(R: csr_matrix, k: int) -> tuple[np.ndarray, np.ndarray, np.ndarray
 
 # ── Scoring ───────────────────────────────────────────────────────────────────
 
+
 def predict_scores(
     U: np.ndarray,
     s: np.ndarray,
     Vt: np.ndarray,
     customer_idx: int,
-    seen_mask: Optional[np.ndarray] = None,
+    seen_mask: np.ndarray | None = None,
 ) -> np.ndarray:
     """
     Compute raw CF recommendation scores for one customer.
@@ -81,7 +78,7 @@ def predict_scores(
 def hybrid_scores(
     cf_scores: np.ndarray,
     cos_sim_matrix: np.ndarray,
-    seen_product_indices: List[int],
+    seen_product_indices: list[int],
     prods_arr: np.ndarray,
     prod_idx_map: dict,
     alpha: float = BEST_ALPHA,
@@ -109,17 +106,19 @@ def hybrid_scores(
         return cf_scores
 
     # Average similarity to seen products (fast: index precomputed matrix)
-    cb_full = cos_sim_matrix[seen_product_indices].mean(axis=0)   # (n_catalog,)
+    cb_full = cos_sim_matrix[seen_product_indices].mean(axis=0)  # (n_catalog,)
 
     # Align to prods_arr order (le_p product ordering)
     cb = np.array([cb_full[prod_idx_map[p]] if p in prod_idx_map else 0.0 for p in prods_arr])
 
     # Normalise (excluding -inf masked entries)
     finite_mask = np.isfinite(cf_scores)
-    cf_norm = np.where(finite_mask,
-                       (cf_scores - cf_scores[finite_mask].min()) /
-                       (cf_scores[finite_mask].max() - cf_scores[finite_mask].min() + 1e-9),
-                       -np.inf)
+    cf_norm = np.where(
+        finite_mask,
+        (cf_scores - cf_scores[finite_mask].min())
+        / (cf_scores[finite_mask].max() - cf_scores[finite_mask].min() + 1e-9),
+        -np.inf,
+    )
     cb_norm = (cb - cb.min()) / (cb.max() - cb.min() + 1e-9)
 
     blended = np.where(finite_mask, alpha * cf_norm + (1.0 - alpha) * cb_norm, -np.inf)
@@ -130,8 +129,8 @@ def recommend(
     scores: np.ndarray,
     le_p: LabelEncoder,
     K: int = 10,
-    exclude_set: Optional[Set] = None,
-) -> List[str]:
+    exclude_set: set | None = None,
+) -> list[str]:
     """
     Return top-K product IDs from a score vector.
 
@@ -150,13 +149,14 @@ def recommend(
 
 # ── Cold-start recommendations ────────────────────────────────────────────────
 
+
 def cold_start_recs(
     customer_id: str,
     cust_prod: pd.DataFrame,
     products: pd.DataFrame,
     category_pop: dict,
     K: int = 10,
-) -> List[str]:
+) -> list[str]:
     """
     Produce top-K recommendations for cold-start customers (<5 purchases)
     using category-aware popularity fallback.
@@ -169,7 +169,7 @@ def cold_start_recs(
     preferred_cats = get_customer_categories(customer_id, cust_prod, products, top_n=3)
     seen = set(cust_prod[cust_prod.customer_id == customer_id]["product_id"])
 
-    recs: List[str] = []
+    recs: list[str] = []
     for cat in preferred_cats:
         for pid in category_pop.get(cat, []):
             if pid not in seen and pid not in recs:
@@ -191,13 +191,14 @@ def cold_start_recs(
 
 # ── Evaluation ────────────────────────────────────────────────────────────────
 
+
 def evaluate_hitrate_mrr(
     U: np.ndarray,
     s: np.ndarray,
     Vt: np.ndarray,
     inter_data: InteractionData,
-    cos_sim_matrix: Optional[np.ndarray],
-    prod_idx_map: Optional[dict],
+    cos_sim_matrix: np.ndarray | None,
+    prod_idx_map: dict | None,
     alpha: float = BEST_ALPHA,
     n_eval: int = 5000,
     K: int = 10,
@@ -233,11 +234,11 @@ def evaluate_hitrate_mrr(
     if not eval_custs:
         return {"hit_rate": 0.0, "mrr": 0.0, "n_evaluated": 0}
 
-    eval_cidx = le_c.transform(eval_custs)          # (n_eval,)
+    eval_cidx = le_c.transform(eval_custs)  # (n_eval,)
     prod_col = {p: i for i, p in enumerate(prods_arr)}
 
     # ── CF scores (batch) ────────────────────────────────────────────────
-    all_cf_eval = (U[eval_cidx] * s) @ Vt           # (n_eval, n_prods) — one BLAS call
+    all_cf_eval = (U[eval_cidx] * s) @ Vt  # (n_eval, n_prods) — one BLAS call
 
     # ── CB scores (batch via sparse × dense) ────────────────────────────
     if cos_sim_matrix is not None and prod_idx_map is not None and alpha < 1.0:
@@ -261,13 +262,14 @@ def evaluate_hitrate_mrr(
             row_sums = np.asarray(purchase_mask.sum(axis=1)).flatten()
             row_sums[row_sums == 0] = 1.0
             from scipy.sparse import diags as sp_diags
+
             norm_mask = sp_diags(1.0 / row_sums) @ purchase_mask
             # CB scores aligned to cos_sim ordering (n_eval, n_cat_products)
-            cb_cat = norm_mask @ cos_sim_matrix         # (n_eval, 5000) dense
+            cb_cat = norm_mask @ cos_sim_matrix  # (n_eval, 5000) dense
 
             # Align cb_cat columns to prods_arr ordering
-            cat_prods = list(prod_idx_map.keys())       # same order as cos_sim_matrix rows
-            cat_prod_arr = np.array(cat_prods)
+            cat_prods = list(prod_idx_map.keys())  # same order as cos_sim_matrix rows
+            np.array(cat_prods)
             # Map cos_sim_matrix product_id -> prods_arr column
             cat_to_svd = np.array([prod_col.get(p, -1) for p in cat_prods])
             valid = cat_to_svd >= 0
@@ -335,7 +337,7 @@ def evaluate_hitrate_mrr(
 
     return {
         "hit_rate": hits / n if n else 0.0,
-        "mrr":      rr   / n if n else 0.0,
+        "mrr": rr / n if n else 0.0,
         "n_evaluated": n,
     }
 
@@ -345,10 +347,10 @@ def hr_at_k_curve(
     s: np.ndarray,
     Vt: np.ndarray,
     inter_data: InteractionData,
-    cos_sim_matrix: Optional[np.ndarray],
-    prod_idx_map: Optional[dict],
+    cos_sim_matrix: np.ndarray | None,
+    prod_idx_map: dict | None,
     alpha: float = BEST_ALPHA,
-    k_values: List[int] = None,
+    k_values: list[int] = None,
     n_eval: int = 3000,
 ) -> pd.DataFrame:
     """Return a DataFrame of hit_rate and MRR at multiple K values for chart generation."""
@@ -357,8 +359,7 @@ def hr_at_k_curve(
     rows = []
     for K in k_values:
         metrics = evaluate_hitrate_mrr(
-            U, s, Vt, inter_data, cos_sim_matrix, prod_idx_map,
-            alpha=alpha, n_eval=n_eval, K=K
+            U, s, Vt, inter_data, cos_sim_matrix, prod_idx_map, alpha=alpha, n_eval=n_eval, K=K
         )
         rows.append({"K": K, "hit_rate": metrics["hit_rate"], "mrr": metrics["mrr"]})
     return pd.DataFrame(rows)

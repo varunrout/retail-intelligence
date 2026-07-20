@@ -3,9 +3,15 @@
 ## Overview
 
 LightGBM supervised binary classifier for return fraud / abuse detection, trained on
-manually labelled ground truth (`returns_hidden_labels.csv`). Replaces the Phase 10
-unsupervised baselines (IQR flag rate 12%, IF average precision 0.058, LOF AP 0.080)
-with a precision-oriented model suitable for operational flagging.
+**synthetic seed-derived labels** (`returns_hidden_labels.csv`). These are not
+manually annotated: the data is synthetic and the label comes from the same
+generative process that produced the features. Replaces the Phase 10 unsupervised
+baselines (IQR flag rate 12%, IF average precision 0.058, LOF AP 0.080) with a
+precision-oriented model suitable for operational flagging.
+
+> Caveat: because the label and the features share a generative process, the
+> supervised average precision (~0.58) is optimistic and would not transfer to real
+> annotated returns. Treat it as an upper bound, not a production estimate.
 
 ---
 

@@ -22,6 +22,7 @@ V2 improvements over phase11:
   Finding 5.C  Time-ordered split — prior_customer_return_rate encodes
                historical return behaviour; temporal ordering is mandatory.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -34,7 +35,7 @@ import pandas as pd
 # ---------------------------------------------------------------------------
 
 ABUSE_LABEL = "is_abuse"
-TIME_KEY    = "order_date"
+TIME_KEY = "order_date"
 
 # Numeric features (all already in mart_returns_risk)
 NUMERIC_COLS: list[str] = [
@@ -51,9 +52,9 @@ NUMERIC_COLS: list[str] = [
 # Binary OHE flags derived from categoricals (Finding 2.B, 2.C)
 OHE_FLAG_COLS: list[str] = [
     "is_suspected_abuse_reason",  # return_reason == "suspected_abuse"
-    "is_electronics",             # category == "electronics"
-    "is_low_discount",            # discount_band == "low_discount"
-    "is_high_risk_band",          # return_risk_band == "high"
+    "is_electronics",  # category == "electronics"
+    "is_low_discount",  # discount_band == "low_discount"
+    "is_high_risk_band",  # return_risk_band == "high"
 ]
 
 FEATURE_COLS: list[str] = NUMERIC_COLS + OHE_FLAG_COLS
@@ -62,6 +63,7 @@ FEATURE_COLS: list[str] = NUMERIC_COLS + OHE_FLAG_COLS
 # ---------------------------------------------------------------------------
 # Feature engineering
 # ---------------------------------------------------------------------------
+
 
 def engineer_features(ret_df: pd.DataFrame) -> pd.DataFrame:
     """Add OHE binary flag columns to a returns-only DataFrame.
@@ -81,16 +83,12 @@ def engineer_features(ret_df: pd.DataFrame) -> pd.DataFrame:
     fe = ret_df.copy()
 
     # OHE flags (Finding 2.B, 2.C)
-    fe["is_suspected_abuse_reason"] = (
-        fe["return_reason"].fillna("") == "suspected_abuse"
-    ).astype(int)
+    fe["is_suspected_abuse_reason"] = (fe["return_reason"].fillna("") == "suspected_abuse").astype(
+        int
+    )
     fe["is_electronics"] = (fe["category"].fillna("") == "electronics").astype(int)
-    fe["is_low_discount"] = (
-        fe["discount_band"].fillna("") == "low_discount"
-    ).astype(int)
-    fe["is_high_risk_band"] = (
-        fe["return_risk_band"].fillna("") == "high"
-    ).astype(int)
+    fe["is_low_discount"] = (fe["discount_band"].fillna("") == "low_discount").astype(int)
+    fe["is_high_risk_band"] = (fe["return_risk_band"].fillna("") == "high").astype(int)
 
     # Impute loyalty_tier nulls to "unknown" (Finding 1.B — 29.5% null)
     fe["loyalty_tier"] = fe["loyalty_tier"].fillna("unknown")
@@ -105,19 +103,20 @@ def engineer_features(ret_df: pd.DataFrame) -> pd.DataFrame:
 # FeatureSet dataclass
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class FeatureSet:
     """Holds train/test splits and metadata for the anomaly model."""
 
     X_train: np.ndarray
     y_train: np.ndarray
-    X_test:  np.ndarray
-    y_test:  np.ndarray
+    X_test: np.ndarray
+    y_test: np.ndarray
     feature_names: list[str]
-    split_date: str            # ISO date string at 80% temporal boundary
-    scale_pos_weight: float    # neg/pos ratio from training split
-    train_df: pd.DataFrame     # full training rows (for profiling)
-    test_df:  pd.DataFrame     # full test rows (for profiling)
+    split_date: str  # ISO date string at 80% temporal boundary
+    scale_pos_weight: float  # neg/pos ratio from training split
+    train_df: pd.DataFrame  # full training rows (for profiling)
+    test_df: pd.DataFrame  # full test rows (for profiling)
 
     @property
     def n_train(self) -> int:
@@ -152,18 +151,18 @@ def build_feature_set(ret_labeled: pd.DataFrame) -> FeatureSet:
     fe = engineer_features(ret_labeled)
     fe = fe.sort_values(TIME_KEY).reset_index(drop=True)
 
-    split_idx  = int(len(fe) * 0.80)
-    train_df   = fe.iloc[:split_idx].copy()
-    test_df    = fe.iloc[split_idx:].copy()
+    split_idx = int(len(fe) * 0.80)
+    train_df = fe.iloc[:split_idx].copy()
+    test_df = fe.iloc[split_idx:].copy()
     split_date = str(fe[TIME_KEY].iloc[split_idx].date())
 
     X_train = train_df[FEATURE_COLS].values.astype(np.float32)
     y_train = train_df[ABUSE_LABEL].values.astype(np.int32)
-    X_test  = test_df[FEATURE_COLS].values.astype(np.float32)
-    y_test  = test_df[ABUSE_LABEL].values.astype(np.int32)
+    X_test = test_df[FEATURE_COLS].values.astype(np.float32)
+    y_test = test_df[ABUSE_LABEL].values.astype(np.int32)
 
-    n_neg   = int((y_train == 0).sum())
-    n_pos   = int((y_train == 1).sum())
+    n_neg = int((y_train == 0).sum())
+    n_pos = int((y_train == 1).sum())
     scale_pos_weight = n_neg / max(n_pos, 1)
 
     return FeatureSet(

@@ -25,9 +25,8 @@ Key design decisions (findings from anomaly_analysis.ipynb):
                  Default 1% flag rate gives precision≈33%, recall≈79%
                  vs phase11 IQR at 12% flag rate with 2.7% precision.
 """
-from __future__ import annotations
 
-from typing import Dict, Tuple
+from __future__ import annotations
 
 import lightgbm as lgb
 import numpy as np
@@ -56,6 +55,7 @@ DEFAULT_FLAG_RATE: float = 0.01  # 1% of returns flagged for review
 # ---------------------------------------------------------------------------
 # Training
 # ---------------------------------------------------------------------------
+
 
 def train_anomaly_model(
     X_train: np.ndarray,
@@ -95,6 +95,7 @@ def train_anomaly_model(
 # Evaluation
 # ---------------------------------------------------------------------------
 
+
 def threshold_at_flag_rate(scores: np.ndarray, flag_rate: float) -> float:
     """Return the score threshold that flags ``flag_rate`` fraction of returns.
 
@@ -116,7 +117,7 @@ def evaluate(
     y_true: np.ndarray,
     scores: np.ndarray,
     flag_rate: float = DEFAULT_FLAG_RATE,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Compute precision, recall, F1 and AP at a given flag rate.
 
     Parameters
@@ -135,29 +136,25 @@ def evaluate(
     """
     ap = float(average_precision_score(y_true, scores))
 
-    thr    = threshold_at_flag_rate(scores, flag_rate)
-    flags  = scores >= thr
-    tp     = int(((flags) & (y_true == 1)).sum())
-    fp     = int(((flags) & (y_true == 0)).sum())
-    fn     = int(((~flags) & (y_true == 1)).sum())
+    thr = threshold_at_flag_rate(scores, flag_rate)
+    flags = scores >= thr
+    tp = int(((flags) & (y_true == 1)).sum())
+    fp = int(((flags) & (y_true == 0)).sum())
+    fn = int(((~flags) & (y_true == 1)).sum())
     flagged = int(flags.sum())
 
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-    recall    = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-    f1        = (
-        2 * precision * recall / (precision + recall)
-        if (precision + recall) > 0
-        else 0.0
-    )
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
 
     return {
-        "ap":            ap,
-        "flagged":       flagged,
+        "ap": ap,
+        "flagged": flagged,
         "flag_rate_pct": flag_rate * 100,
-        "precision":     precision,
-        "recall":        recall,
-        "f1":            f1,
-        "threshold":     thr,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+        "threshold": thr,
     }
 
 
@@ -203,8 +200,10 @@ def pr_curve_df(
     """
     prec, rec, thr = precision_recall_curve(y_true, scores)
     # sklearn returns len(thr) = len(prec) - 1
-    return pd.DataFrame({
-        "precision": prec[:-1],
-        "recall":    rec[:-1],
-        "threshold": thr,
-    })
+    return pd.DataFrame(
+        {
+            "precision": prec[:-1],
+            "recall": rec[:-1],
+            "threshold": thr,
+        }
+    )

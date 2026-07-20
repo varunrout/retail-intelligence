@@ -4,6 +4,7 @@ Decisions encoded here are documented and justified in
 ``analysis_notebooks/uplift_analysis.ipynb``. Each feature set choice has a
 finding number tying it back to the analysis.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -52,12 +53,12 @@ CAMPAIGN_MART_FEATURES = [
     "offer_type",
     "offer_strength",
     "predicted_business_segment_at_send",
-    "targeting_rule_source",       # Finding 1.C: include as covariate, not filter
+    "targeting_rule_source",  # Finding 1.C: include as covariate, not filter
     "pre_90d_orders",
     "pre_90d_revenue",
     "pre_90d_aov",
-    "assignment_month",            # engineered below
-    "assignment_dayofweek",        # engineered below
+    "assignment_month",  # engineered below
+    "assignment_dayofweek",  # engineered below
 ]
 
 # ── Customer-mart enrichment features (Finding 6.C) ─────────────────────────
@@ -79,12 +80,12 @@ CUSTOMER_ENRICHMENT_FEATURES = [
 
 # ── Engineered features ──────────────────────────────────────────────────────
 ENGINEERED_FEATURES = [
-    "segment_campaign",            # Finding 7.A: customer_value_band × campaign_type
-    "is_new_customer",             # pre_90d_orders == 0
-    "targeting_is_rule_based",     # binary flag from targeting_rule_source
-    "log_pre_90d_revenue",         # log1p transform of skewed revenue
-    "log_tenure_days",             # log1p
-    "order_density_90d",           # pre_90d_orders / 90
+    "segment_campaign",  # Finding 7.A: customer_value_band × campaign_type
+    "is_new_customer",  # pre_90d_orders == 0
+    "targeting_is_rule_based",  # binary flag from targeting_rule_source
+    "log_pre_90d_revenue",  # log1p transform of skewed revenue
+    "log_tenure_days",  # log1p
+    "order_density_90d",  # pre_90d_orders / 90
 ]
 
 CATEGORICAL_FEATURES = [
@@ -108,11 +109,7 @@ class FeatureSet:
 
 def feature_set() -> FeatureSet:
     """Final V2 feature set: campaign mart + customer enrichment + engineered."""
-    cols = (
-        CAMPAIGN_MART_FEATURES
-        + CUSTOMER_ENRICHMENT_FEATURES
-        + ENGINEERED_FEATURES
-    )
+    cols = CAMPAIGN_MART_FEATURES + CUSTOMER_ENRICHMENT_FEATURES + ENGINEERED_FEATURES
     # deduplicate while preserving order
     seen: set[str] = set()
     unique_cols = []

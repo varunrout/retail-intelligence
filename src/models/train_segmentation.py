@@ -26,6 +26,7 @@ Key design decisions (findings from segmentation_analysis.ipynb):
                  Segment 0 → Non-Purchasers is always cluster_id=3 (highest
                  label), buyers ranked by avg_revenue.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -40,7 +41,6 @@ from sklearn.preprocessing import StandardScaler
 from src.features.features_segmentation import (
     BUYER_FEATURES,
     SegmentationPipeline,
-    engineer_features,
 )
 
 # ---------------------------------------------------------------------------
@@ -62,6 +62,7 @@ KMEANS_RANDOM_STATE: int = 42
 # ---------------------------------------------------------------------------
 # Dataclass
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class SegmentationModel:
@@ -89,11 +90,13 @@ class SegmentationModel:
     """
 
     pipeline: SegmentationPipeline = field(default_factory=SegmentationPipeline)
-    kmeans: KMeans = field(default_factory=lambda: KMeans(
-        n_clusters=N_BUYER_CLUSTERS,
-        n_init=KMEANS_N_INIT,
-        random_state=KMEANS_RANDOM_STATE,
-    ))
+    kmeans: KMeans = field(
+        default_factory=lambda: KMeans(
+            n_clusters=N_BUYER_CLUSTERS,
+            n_init=KMEANS_N_INIT,
+            random_state=KMEANS_RANDOM_STATE,
+        )
+    )
     n_buyer_clusters: int = N_BUYER_CLUSTERS
     revenue_order: list[int] = field(default_factory=list)
     labels_: np.ndarray = field(default_factory=lambda: np.empty(0, dtype=int))
@@ -105,6 +108,7 @@ class SegmentationModel:
 # ---------------------------------------------------------------------------
 # Training
 # ---------------------------------------------------------------------------
+
 
 def train_segmentation(
     fe: pd.DataFrame,
@@ -139,9 +143,7 @@ def train_segmentation(
 
     # --- Stage 1: fit pipeline on buyers -----------------------------------
     n_comp = pipeline_n_components(buyer_fe)
-    pipeline = SegmentationPipeline(
-        pca=PCA(n_components=n_comp, random_state=random_state)
-    )
+    pipeline = SegmentationPipeline(pca=PCA(n_components=n_comp, random_state=random_state))
     X_pca = pipeline.fit_transform(buyer_fe)
 
     # --- Stage 2: k-means on buyer PCA space --------------------------------
@@ -160,9 +162,7 @@ def train_segmentation(
     buyer_fe = buyer_fe.copy()
     buyer_fe["_raw_label"] = buyer_raw_labels
     mean_revenue = (
-        buyer_fe.groupby("_raw_label")["total_net_revenue"]
-        .mean()
-        .sort_values(ascending=False)
+        buyer_fe.groupby("_raw_label")["total_net_revenue"].mean().sort_values(ascending=False)
     )
     # revenue_order[i] = new_label for raw_label i
     revenue_order: list[int] = [0] * n_buyer_clusters
@@ -206,6 +206,7 @@ def pipeline_n_components(buyer_fe: pd.DataFrame) -> int:
 # Evaluation helpers
 # ---------------------------------------------------------------------------
 
+
 def cluster_profiles(
     fe: pd.DataFrame,
     labels: np.ndarray,
@@ -235,30 +236,38 @@ def cluster_profiles(
     tmp["cluster_id"] = labels
 
     # Build segment name map
-    name_map: dict[int, str] = {
-        i: BUYER_SEGMENT_NAMES[i] for i in range(n_buyer_clusters)
-    }
+    name_map: dict[int, str] = {i: BUYER_SEGMENT_NAMES[i] for i in range(n_buyer_clusters)}
     name_map[n_buyer_clusters] = NON_PURCHASER_SEGMENT_NAME
 
-    agg = tmp.groupby("cluster_id").agg(
-        n=("customer_id", "count"),
-        pct_non_purchaser=("is_non_purchaser", "mean"),
-        churn_rate=("churn_flag_90d", "mean"),
-        median_aov=("avg_order_value", "median"),
-        avg_revenue=("total_net_revenue", "mean"),
-        median_recency=("recency_days", "median"),
-        median_order_rate=("order_rate_per_month", "median"),
-    ).reset_index()
+    agg = (
+        tmp.groupby("cluster_id")
+        .agg(
+            n=("customer_id", "count"),
+            pct_non_purchaser=("is_non_purchaser", "mean"),
+            churn_rate=("churn_flag_90d", "mean"),
+            median_aov=("avg_order_value", "median"),
+            avg_revenue=("total_net_revenue", "mean"),
+            median_recency=("recency_days", "median"),
+            median_order_rate=("order_rate_per_month", "median"),
+        )
+        .reset_index()
+    )
 
     n_total = len(fe)
     agg["pct_of_total"] = agg["n"] / n_total
     agg["segment_name"] = agg["cluster_id"].map(name_map)
 
     col_order = [
-        "cluster_id", "segment_name", "n", "pct_of_total",
-        "churn_rate", "pct_non_purchaser",
-        "median_aov", "avg_revenue",
-        "median_recency", "median_order_rate",
+        "cluster_id",
+        "segment_name",
+        "n",
+        "pct_of_total",
+        "churn_rate",
+        "pct_non_purchaser",
+        "median_aov",
+        "avg_revenue",
+        "median_recency",
+        "median_order_rate",
     ]
     return agg[col_order].sort_values("cluster_id").reset_index(drop=True)
 
@@ -268,9 +277,7 @@ def segment_metrics(
     profiles: pd.DataFrame,
 ) -> dict:
     """Return a dict of scalar quality metrics for logging / JSON output."""
-    churn_spread = float(
-        profiles["churn_rate"].max() - profiles["churn_rate"].min()
-    )
+    churn_spread = float(profiles["churn_rate"].max() - profiles["churn_rate"].min())
     return {
         "n_total": int(profiles["n"].sum()),
         "n_buyer_clusters": model.n_buyer_clusters,

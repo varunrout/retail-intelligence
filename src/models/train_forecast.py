@@ -10,6 +10,7 @@ Key design decisions (findings from forecast_analysis.ipynb):
   Short series: series with <8 weeks are filtered from training (F1.A).
   Categoricals: category, subcategory, price_tier handled natively by LightGBM.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -19,12 +20,12 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
-from src.features.features_forecast import FeatureSet, LABEL, feature_set
+from src.features.features_forecast import LABEL, FeatureSet, feature_set
 
 # ── LightGBM hyperparameters ───────────────────────────────────────────────
 FORECAST_PARAMS: dict = {
-    "objective": "tweedie",           # F3.B: corrects systematic under-prediction
-    "tweedie_variance_power": 1.5,    # midpoint; stable for right-skewed counts (F1.B)
+    "objective": "tweedie",  # F3.B: corrects systematic under-prediction
+    "tweedie_variance_power": 1.5,  # midpoint; stable for right-skewed counts (F1.B)
     "metric": "rmse",
     "learning_rate": 0.05,
     "num_leaves": 127,
@@ -196,16 +197,20 @@ def evaluate_forecast(
     mae = float(mean_absolute_error(y, preds))
     rmse = float(np.sqrt(mean_squared_error(y, preds)))
     smape = _smape(y, preds)
-    bias = float(np.mean(preds - y))   # positive = over-predict
+    bias = float(np.mean(preds - y))  # positive = over-predict
 
-    summary = pd.DataFrame([{
-        "model": "lgbm_tweedie_v2",
-        "mae": mae,
-        "rmse": rmse,
-        "smape": smape,
-        "mean_bias": bias,
-        "n_test": len(y),
-    }])
+    summary = pd.DataFrame(
+        [
+            {
+                "model": "lgbm_tweedie_v2",
+                "mae": mae,
+                "rmse": rmse,
+                "smape": smape,
+                "mean_bias": bias,
+                "n_test": len(y),
+            }
+        ]
+    )
 
     rows = []
     if "category" in test_df.columns:
@@ -213,13 +218,15 @@ def evaluate_forecast(
             idx = grp.index.tolist()
             y_c = y[idx]
             p_c = preds[idx]
-            rows.append({
-                "category": cat,
-                "mae": float(mean_absolute_error(y_c, p_c)),
-                "smape": _smape(y_c, p_c),
-                "mean_bias": float(np.mean(p_c - y_c)),
-                "n": len(y_c),
-            })
+            rows.append(
+                {
+                    "category": cat,
+                    "mae": float(mean_absolute_error(y_c, p_c)),
+                    "smape": _smape(y_c, p_c),
+                    "mean_bias": float(np.mean(p_c - y_c)),
+                    "n": len(y_c),
+                }
+            )
     per_category = pd.DataFrame(rows)
 
     return summary, per_category

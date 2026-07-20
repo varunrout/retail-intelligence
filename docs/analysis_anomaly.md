@@ -26,7 +26,7 @@ is required for LightGBM.
 abuse profile.
 
 **Finding 1.C — Label availability confirmed:** `returns_hidden_labels.csv` is available
-and contains ground-truth abuse labels. Phase 10/11 used unsupervised methods only
+and contains synthetic seed-derived abuse labels (not manual annotations). Phase 10/11 used unsupervised methods only
 (Isolation Forest, LOF) despite these labels being accessible. The supervised path is
 valid and unlocks a materially higher performance ceiling.
 
