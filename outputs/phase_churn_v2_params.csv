@@ -10,6 +10,6 @@ bagging_freq,5
 verbose,-1
 seed,42
 deterministic,True
-best_iteration,133
+best_iteration,122
 maturity_days,90
 test_size,0.2

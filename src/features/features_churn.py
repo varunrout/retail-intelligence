@@ -4,6 +4,7 @@ Decisions encoded here are documented and justified in
 ``analysis_notebooks/churn_analysis.ipynb``. Each engineered feature has a
 finding number tying it back to the analysis.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -22,10 +23,16 @@ _DROPPED_WEAK_CATEGORICALS = [
     "is_marketing_opt_in",
 ]
 
+# ── Leakage exclusion ──────────────────────────────────────────────────────
+# customer_segment_seed is a synthetic data-generating seed, not an observable
+# production attribute. It cannot exist at scoring time for a real customer and
+# risks encoding the label, so it is excluded from the feature set entirely
+# (see docs/modeling_v2_churn.md, leakage audit).
+_EXCLUDED_LEAKAGE_FEATURES = ["customer_segment_seed"]
+
 CARRY_FORWARD_FEATURES = [
     # demographics / segmentation that DO carry signal
     "income_band",
-    "customer_segment_seed",
     # volume / revenue
     "total_orders",
     "total_net_revenue",
@@ -74,7 +81,6 @@ NULL_FLAG_FEATURES = [
 
 CATEGORICAL_FEATURES = [
     "income_band",
-    "customer_segment_seed",
     "customer_value_band",
 ]
 
@@ -90,7 +96,10 @@ class FeatureSet:
 
 
 def feature_set() -> FeatureSet:
-    """Final V2 feature set: 29 carry-forward + 3 engineered + 3 null flags."""
+    """Final V2 feature set: 28 carry-forward + 3 engineered + 3 null flags.
+
+    customer_segment_seed is deliberately excluded (see _EXCLUDED_LEAKAGE_FEATURES).
+    """
     return FeatureSet(
         feature_columns=CARRY_FORWARD_FEATURES + ENGINEERED_FEATURES + NULL_FLAG_FEATURES,
         categorical_columns=CATEGORICAL_FEATURES,
