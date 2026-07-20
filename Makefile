@@ -1,4 +1,4 @@
-.PHONY: build sample marts test lint format clean
+.PHONY: build sample marts test lint format eval clean
 
 # Full default-scale synthetic dataset + marts.
 build:
@@ -21,6 +21,12 @@ lint:
 
 format:
 	ruff format .
+
+# Retrain all six V2 models from the built marts and check the regenerated
+# metrics against the committed outputs/ within tolerance. Needs `make build`
+# (or `make marts` over an existing data/raw) first. Overwrites outputs/.
+eval:
+	python -m analysis.eval_reproduction_check
 
 # Remove generated data (keeps the gitignored dirs).
 clean:
