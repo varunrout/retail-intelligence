@@ -22,10 +22,12 @@ jobs:
         run: ruff check .
       - name: Format check
         run: ruff format --check .
+      - name: Build sample data
+        # Generate a tiny synthetic dataset and build the DuckDB marts so the
+        # data-dependent tests actually run on CI and prove a clone reproduces
+        # the pipeline end to end.
+        run: python -m src.data.build --scale sample
       - name: Test
-        # Data-dependent tests skip automatically when data/processed is absent
-        # (raw data is ~1GB and gitignored). Unit tests for schemas, validators
-        # and feature builders run on in-memory fixtures and always execute.
         run: pytest --cov=src --cov-report=term-missing
 
   clean-install:
