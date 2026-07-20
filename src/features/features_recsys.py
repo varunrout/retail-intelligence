@@ -7,11 +7,11 @@ Design decisions confirmed by recsys_analysis.ipynb:
   - Cold-start threshold: <5 purchases → category-aware popularity fallback
   - Content: OHE(category, subcategory, brand_type, price_tier) + embedding group prefix + binary flags
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import reduce
-from typing import Dict, List, Set
 
 import numpy as np
 import pandas as pd
@@ -20,10 +20,10 @@ from sklearn.preprocessing import LabelEncoder
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 SPLIT_DATE = pd.Timestamp("2025-11-01")
-COLD_START_THRESHOLD = 5          # customers with fewer purchases get popularity fallback
+COLD_START_THRESHOLD = 5  # customers with fewer purchases get popularity fallback
 
 # Implicit signal weights (confirmed best from §4 signal sweep)
-W_BUY  = 1.0
+W_BUY = 1.0
 W_VIEW = 0.15
 W_WISH = 0.40
 W_POS_REV = 0.5
@@ -33,38 +33,40 @@ W_POS_REV = 0.5
 @dataclass
 class InteractionData:
     """Holds train/test splits and encoders for the interaction matrix."""
-    R_train: csr_matrix           # (n_customers × n_products) implicit score matrix
-    le_c: LabelEncoder            # customer label encoder
-    le_p: LabelEncoder            # product label encoder
-    train_seen: Dict[str, Set]    # {customer_id: set of product_ids seen in train}
-    test_novel: Dict[str, Set]    # {customer_id: set of novel test product_ids}
+
+    R_train: csr_matrix  # (n_customers × n_products) implicit score matrix
+    le_c: LabelEncoder  # customer label encoder
+    le_p: LabelEncoder  # product label encoder
+    train_seen: dict[str, set]  # {customer_id: set of product_ids seen in train}
+    test_novel: dict[str, set]  # {customer_id: set of novel test product_ids}
     n_train: int
     n_test: int
-    n_eval_customers: int         # customers that have novel test products
+    n_eval_customers: int  # customers that have novel test products
 
 
 # ── Signal construction ────────────────────────────────────────────────────────
 
+
 def _implicit_score(df: pd.DataFrame) -> pd.Series:
     """Compute implicit score from multi-signal interaction frame."""
-    qty   = df.get("quantity",   pd.Series(0, index=df.index)).fillna(0)
+    qty = df.get("quantity", pd.Series(0, index=df.index)).fillna(0)
     views = df.get("view_count", pd.Series(0, index=df.index)).fillna(0)
     wishes = df.get("wish_count", pd.Series(0, index=df.index)).fillna(0)
     pos_rev = df.get("pos_review", pd.Series(0, index=df.index)).fillna(0)
     return (
-        np.log1p(qty)    * W_BUY    +
-        np.log1p(views)  * W_VIEW   +
-        np.log1p(wishes) * W_WISH   +
-        pos_rev          * W_POS_REV
+        np.log1p(qty) * W_BUY
+        + np.log1p(views) * W_VIEW
+        + np.log1p(wishes) * W_WISH
+        + pos_rev * W_POS_REV
     )
 
 
 def build_interaction_matrix(
-    cust_prod: pd.DataFrame,       # merged orders × order_items with order_date
-    view_ev: pd.DataFrame,         # session events filtered to view_product with known customer/product
-    wish_ev: pd.DataFrame,         # session events filtered to wishlist_add with known customer/product
-    pos_rev: pd.DataFrame,         # reviews filtered to rating >= 4
-    all_products: pd.DataFrame,    # products table (for full product universe)
+    cust_prod: pd.DataFrame,  # merged orders × order_items with order_date
+    view_ev: pd.DataFrame,  # session events filtered to view_product with known customer/product
+    wish_ev: pd.DataFrame,  # session events filtered to wishlist_add with known customer/product
+    pos_rev: pd.DataFrame,  # reviews filtered to rating >= 4
+    all_products: pd.DataFrame,  # products table (for full product universe)
 ) -> InteractionData:
     """
     Build time-ordered train/test interaction matrices.
@@ -74,7 +76,7 @@ def build_interaction_matrix(
     """
     # ── Time split ──────────────────────────────────────────────────────────
     train_buy = cust_prod[cust_prod["order_date"] < SPLIT_DATE].copy()
-    test_buy  = cust_prod[cust_prod["order_date"] >= SPLIT_DATE].copy()
+    test_buy = cust_prod[cust_prod["order_date"] >= SPLIT_DATE].copy()
 
     # Customers that appear in both halves
     overlap = set(train_buy.customer_id.unique()) & set(test_buy.customer_id.unique())
@@ -91,23 +93,11 @@ def build_interaction_matrix(
     view_df = view_ev.copy()
     if "event_time" in view_df.columns:
         view_df = view_df[pd.to_datetime(view_df["event_time"]) < SPLIT_DATE]
-    view_agg = (
-        view_df.groupby(["customer_id", "product_id"])
-        .size()
-        .reset_index(name="view_count")
-    )
+    view_agg = view_df.groupby(["customer_id", "product_id"]).size().reset_index(name="view_count")
 
-    wish_agg = (
-        wish_ev.groupby(["customer_id", "product_id"])
-        .size()
-        .reset_index(name="wish_count")
-    )
+    wish_agg = wish_ev.groupby(["customer_id", "product_id"]).size().reset_index(name="wish_count")
 
-    rev_agg = (
-        pos_rev.groupby(["customer_id", "product_id"])
-        .size()
-        .reset_index(name="pos_review")
-    )
+    rev_agg = pos_rev.groupby(["customer_id", "product_id"]).size().reset_index(name="pos_review")
 
     # Merge all signals
     inter = reduce(
@@ -165,6 +155,7 @@ def build_interaction_matrix(
 
 # ── Content features ──────────────────────────────────────────────────────────
 
+
 def build_content_matrix(
     products: pd.DataFrame,
     pa: pd.DataFrame,
@@ -203,6 +194,7 @@ def build_content_matrix(
 
 # ── Cold-start helpers ────────────────────────────────────────────────────────
 
+
 def category_top_n_popularity(
     cust_prod: pd.DataFrame,
     products: pd.DataFrame,
@@ -227,7 +219,7 @@ def get_customer_categories(
     cust_prod: pd.DataFrame,
     products: pd.DataFrame,
     top_n: int = 3,
-) -> List[str]:
+) -> list[str]:
     """Return a customer's most purchased categories (for cold-start routing)."""
     bought = cust_prod[cust_prod.customer_id == customer_id]
     if bought.empty:

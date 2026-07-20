@@ -9,6 +9,7 @@ Algorithm (Finding 4.C / §4):
 
 Full derivation in analysis_notebooks/uplift_analysis.ipynb §7 design.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -17,7 +18,6 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr
-from sklearn.metrics import roc_auc_score
 
 from src.features.features_uplift import CAMPAIGN_KEY, FeatureSet, feature_set
 
@@ -175,7 +175,7 @@ def train_xlearner(
         (Finding 1.B — T/C ratio up to 12.4:1).  Capped to avoid extreme
         weights destabilising the loss.
     """
-    from src.features.features_uplift import CAMPAIGN_KEY, LABEL, TREATMENT_KEY
+    from src.features.features_uplift import LABEL, TREATMENT_KEY
 
     fs = fs or feature_set()
     s1_params = {**STAGE1_PARAMS, **(stage1_params or {})}
@@ -194,11 +194,7 @@ def train_xlearner(
     t_va = valid_df[TREATMENT_KEY].astype(int).values
 
     # ── Per-campaign propensity (treatment fraction) ────────────────────────
-    propensity: dict[str, float] = (
-        train_df.groupby(CAMPAIGN_KEY)[TREATMENT_KEY]
-        .mean()
-        .to_dict()
-    )
+    propensity: dict[str, float] = train_df.groupby(CAMPAIGN_KEY)[TREATMENT_KEY].mean().to_dict()
 
     # ── Stage 1: fit μ₁ and μ₀ per campaign ────────────────────────────────
     print("Stage 1: fitting per-campaign outcome models …")
@@ -247,12 +243,24 @@ def train_xlearner(
 
         # ── μ₁: treatment arm ──────────────────────────────────────────────
         if treat_mask_tr.sum() >= 20 and treat_mask_va.sum() >= 5:
-            ds1_tr = _lgb_dataset(X_cmp_all[treat_mask_tr], y_cmp_all[treat_mask_tr], cat_cols_present)
-            ds1_va = _lgb_dataset(X_v_cmp[treat_mask_va], y_v_cmp[treat_mask_va], cat_cols_present, reference=ds1_tr)
-            mu1_bst = _train_lgb(ds1_tr, ds1_va, s1_params, num_boost_round=num_boost_round, early_stopping_rounds=early_stopping_rounds)
+            ds1_tr = _lgb_dataset(
+                X_cmp_all[treat_mask_tr], y_cmp_all[treat_mask_tr], cat_cols_present
+            )
+            ds1_va = _lgb_dataset(
+                X_v_cmp[treat_mask_va], y_v_cmp[treat_mask_va], cat_cols_present, reference=ds1_tr
+            )
+            mu1_bst = _train_lgb(
+                ds1_tr,
+                ds1_va,
+                s1_params,
+                num_boost_round=num_boost_round,
+                early_stopping_rounds=early_stopping_rounds,
+            )
             stage1_best_iters[f"mu1_{cmp}"] = mu1_bst.best_iteration or num_boost_round
             # Score ALL campaign rows with μ₁ (use full snapshot, not trimmed fit set)
-            mu1_hat_tr[mask_tr] = mu1_bst.predict(X_cmp_full, num_iteration=stage1_best_iters[f"mu1_{cmp}"])
+            mu1_hat_tr[mask_tr] = mu1_bst.predict(
+                X_cmp_full, num_iteration=stage1_best_iters[f"mu1_{cmp}"]
+            )
             _mu1_boosters[cmp] = mu1_bst
         else:
             # Fallback: use global treatment mean for this campaign
@@ -266,12 +274,23 @@ def train_xlearner(
             ctrl_weight = min(tc_ratio, tc_weight_cap)
             w_ctrl = np.full(ctrl_mask_tr.sum(), ctrl_weight)
 
-            ds0_tr = _lgb_dataset(X_cmp_all[ctrl_mask_tr], y_cmp_all[ctrl_mask_tr], cat_cols_present, weight=w_ctrl)
-            ds0_va = _lgb_dataset(X_v_cmp[ctrl_mask_va], y_v_cmp[ctrl_mask_va], cat_cols_present, reference=ds0_tr)
-            mu0_bst = _train_lgb(ds0_tr, ds0_va, s1_params,
-                                  num_boost_round=num_boost_round, early_stopping_rounds=early_stopping_rounds)
+            ds0_tr = _lgb_dataset(
+                X_cmp_all[ctrl_mask_tr], y_cmp_all[ctrl_mask_tr], cat_cols_present, weight=w_ctrl
+            )
+            ds0_va = _lgb_dataset(
+                X_v_cmp[ctrl_mask_va], y_v_cmp[ctrl_mask_va], cat_cols_present, reference=ds0_tr
+            )
+            mu0_bst = _train_lgb(
+                ds0_tr,
+                ds0_va,
+                s1_params,
+                num_boost_round=num_boost_round,
+                early_stopping_rounds=early_stopping_rounds,
+            )
             stage1_best_iters[f"mu0_{cmp}"] = mu0_bst.best_iteration or num_boost_round
-            mu0_hat_tr[mask_tr] = mu0_bst.predict(X_cmp_full, num_iteration=stage1_best_iters[f"mu0_{cmp}"])
+            mu0_hat_tr[mask_tr] = mu0_bst.predict(
+                X_cmp_full, num_iteration=stage1_best_iters[f"mu0_{cmp}"]
+            )
             _mu0_boosters[cmp] = mu0_bst
         else:
             mu0_hat_tr[mask_tr] = float(y_tr[t_tr == 0].mean()) if (t_tr == 0).any() else 0.5
@@ -326,14 +345,24 @@ def train_xlearner(
     # τ₁: trained on treated pseudo-outcomes
     ds2_tau1_tr = _lgb_dataset(X_tr_treat, D_treated, cat_cols_present)
     ds2_tau1_va = _lgb_dataset(X_va_treat, D_treated_va, cat_cols_present, reference=ds2_tau1_tr)
-    tau1_bst = _train_lgb(ds2_tau1_tr, ds2_tau1_va, s2_params,
-                           num_boost_round=num_boost_round, early_stopping_rounds=early_stopping_rounds)
+    tau1_bst = _train_lgb(
+        ds2_tau1_tr,
+        ds2_tau1_va,
+        s2_params,
+        num_boost_round=num_boost_round,
+        early_stopping_rounds=early_stopping_rounds,
+    )
 
     # τ₀: trained on control pseudo-outcomes
     ds2_tau0_tr = _lgb_dataset(X_tr_ctrl, D_control, cat_cols_present)
     ds2_tau0_va = _lgb_dataset(X_va_ctrl, D_control_va, cat_cols_present, reference=ds2_tau0_tr)
-    tau0_bst = _train_lgb(ds2_tau0_tr, ds2_tau0_va, s2_params,
-                           num_boost_round=num_boost_round, early_stopping_rounds=early_stopping_rounds)
+    tau0_bst = _train_lgb(
+        ds2_tau0_tr,
+        ds2_tau0_va,
+        s2_params,
+        num_boost_round=num_boost_round,
+        early_stopping_rounds=early_stopping_rounds,
+    )
 
     stage2_best_iters = {
         "tau1": tau1_bst.best_iteration or num_boost_round,
@@ -352,6 +381,7 @@ def train_xlearner(
 
 
 # ── Evaluation helpers ─────────────────────────────────────────────────────
+
 
 def evaluate_uplift(
     df: pd.DataFrame,
@@ -398,23 +428,23 @@ def evaluate_uplift(
         cumulative_ctrl += n_c
         if not np.isnan(obs_uplift):
             cumulative_lift += obs_uplift
-        decile_rows.append({
-            "model": label,
-            "decile": dec,
-            "n_treatment": n_t,
-            "n_control": n_c,
-            "response_rate_treatment": r_t,
-            "response_rate_control": r_c,
-            "observed_uplift": obs_uplift,
-            "mean_ite_score": mean_ite,
-            "cumulative_observed_uplift": cumulative_lift / dec,
-        })
+        decile_rows.append(
+            {
+                "model": label,
+                "decile": dec,
+                "n_treatment": n_t,
+                "n_control": n_c,
+                "response_rate_treatment": r_t,
+                "response_rate_control": r_c,
+                "observed_uplift": obs_uplift,
+                "mean_ite_score": mean_ite,
+                "cumulative_observed_uplift": cumulative_lift / dec,
+            }
+        )
     decile_df = pd.DataFrame(decile_rows)
 
     # ── Qini-like area (cumulative incremental responses vs random) ─────────
     # Count incremental responses above random in each decile bucket
-    n_total = len(df)
-    random_rate = float(y[t == 1].mean())  # overall treatment response rate
     incr_responses = []
     for dec in range(1, n_deciles + 1):
         mask = df["_decile"] == dec
@@ -432,6 +462,7 @@ def evaluate_uplift(
 
     # ── Top-decile and top-half observed uplift ────────────────────────────
     top1 = float(decile_df.loc[decile_df["decile"] == 1, "observed_uplift"].iloc[0])
+    top3 = float(decile_df[decile_df["decile"] <= 3]["observed_uplift"].mean())
     top5 = float(decile_df[decile_df["decile"] <= 5]["observed_uplift"].mean())
 
     # ── Spearman rank-correlation (ITE vs observed outcome gap) ───────────
@@ -442,17 +473,22 @@ def evaluate_uplift(
     else:
         spearman_r = np.nan
 
-    summary = pd.DataFrame([{
-        "model": label,
-        "split_strategy": "time_ordered_80_20_by_assignment_datetime",
-        "approved_feature_count": len([c for c in feature_set().feature_columns]),
-        "test_rows": int(len(df)),
-        "overall_ate_test": ate_test,
-        "top1_decile_observed_uplift": top1,
-        "top5_decile_observed_uplift": top5,
-        "qini_like_area": qini_area,
-        "spearman_rank_corr": spearman_r,
-    }])
+    summary = pd.DataFrame(
+        [
+            {
+                "model": label,
+                "split_strategy": "time_ordered_80_20_by_assignment_datetime",
+                "approved_feature_count": len([c for c in feature_set().feature_columns]),
+                "test_rows": int(len(df)),
+                "overall_ate_test": ate_test,
+                "top1_decile_observed_uplift": top1,
+                "top3_decile_observed_uplift": top3,
+                "top5_decile_observed_uplift": top5,
+                "qini_like_area": qini_area,
+                "spearman_rank_corr": spearman_r,
+            }
+        ]
+    )
     return summary, decile_df
 
 
@@ -460,12 +496,14 @@ def feature_importance_table(model: XLearnerModel, *, top_n: int = 30) -> pd.Dat
     """Return Stage-2 feature importances (τ₁ and τ₀ averaged)."""
     rows = []
     for stage, bst in [("tau1", model.tau1), ("tau0", model.tau0)]:
-        imp = pd.DataFrame({
-            "feature": bst.feature_name(),
-            "importance_gain": bst.feature_importance(importance_type="gain"),
-            "importance_split": bst.feature_importance(importance_type="split"),
-            "stage": stage,
-        })
+        imp = pd.DataFrame(
+            {
+                "feature": bst.feature_name(),
+                "importance_gain": bst.feature_importance(importance_type="gain"),
+                "importance_split": bst.feature_importance(importance_type="split"),
+                "stage": stage,
+            }
+        )
         rows.append(imp)
     combined = pd.concat(rows)
     agg = (

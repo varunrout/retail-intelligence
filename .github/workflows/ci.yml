@@ -1,0 +1,45 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Lint
+        run: ruff check .
+      - name: Format check
+        run: ruff format --check .
+      - name: Test
+        # Data-dependent tests skip automatically when data/processed is absent
+        # (raw data is ~1GB and gitignored). Unit tests for schemas, validators
+        # and feature builders run on in-memory fixtures and always execute.
+        run: pytest --cov=src --cov-report=term-missing
+
+  clean-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Clean install imports every module
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install -r requirements.txt
+          python -c "import lightgbm, duckdb, sklearn, pandas, pyarrow"
+          python -c "import src.data.mart_loaders, src.data.mart_schemas, src.data.mart_validators"
+          python -c "import src.features.features_churn, src.models.train_churn"

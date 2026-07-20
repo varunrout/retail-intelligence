@@ -1,5 +1,13 @@
 # Phase Forecast V2 Report
 
+> **Honest headline (read first).** On the same week-ordered test split
+> (`analysis/forecast_naive_baseline.py`, `outputs/forecast_naive_baseline.csv`):
+> LightGBM-Tweedie V2 MAE 1.234, RF baseline 1.251, naive-seasonal-4w 1.600,
+> naive-last-week 1.639. Both tree models beat the naive forecasts by ~23-25%, so
+> there is real forecastable signal. But **V2 beats the RF baseline by only 1.4% MAE**
+> — RF is effectively the ceiling here, and the long V2 feature list buys almost
+> nothing over it. The improvement is best described as marginal, not a win.
+
 ## Objective
 
 Improve weekly product-store demand forecasting accuracy and eliminate the systematic

@@ -1,0 +1,4 @@
+model,is_candidate,roc_auc,pr_auc,n_test,churn_rate_test,split,feature_policy
+logreg_balanced,False,0.8443198870845107,0.4972868747855254,8388,0.14997615641392464,time_ordered_80_20_mature_90d,recency_excluded; customer_segment_seed excluded
+rf_balanced,False,0.8143685183409628,0.4820701598298455,8388,0.14997615641392464,time_ordered_80_20_mature_90d,recency_excluded; customer_segment_seed excluded
+lightgbm_v2,True,0.8116281325463737,0.44772587877567543,8388,0.14997615641392464,time_ordered_80_20_mature_90d,recency_excluded; customer_segment_seed excluded

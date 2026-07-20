@@ -1,0 +1,5 @@
+model,mae,smape,source,v2_vs_this_pct_mae
+lgbm_tweedie_v2,1.2336,0.4562,committed,0.0
+rf_baseline,1.2512,0.4677,committed,1.4
+naive_seasonal_4w,1.6,0.5392,computed (n=150315),22.9
+naive_last_week,1.6386,0.5442,computed (n=150322),24.7

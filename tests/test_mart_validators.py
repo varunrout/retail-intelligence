@@ -4,8 +4,10 @@ from src.config import PROCESSED_DIR
 from src.data.mart_loaders import load_mart
 from src.data.mart_schemas import MART_CONTRACTS
 from src.data.mart_validators import summarize_validation_results, validate_mart
+from tests.marks import requires_marts
 
 
+@requires_marts
 def test_validate_customer_mart_passes_key_checks() -> None:
     df = load_mart("mart_customer_features", processed_dir=PROCESSED_DIR)
     contract = MART_CONTRACTS["mart_customer_features"]
@@ -26,6 +28,7 @@ def test_validator_fails_when_required_column_missing() -> None:
     assert int(missing_required["failed_rows"].iloc[0]) > 0
 
 
+@requires_marts
 def test_validation_summary_has_status_column() -> None:
     df = load_mart("mart_campaign_response", processed_dir=PROCESSED_DIR)
     contract = MART_CONTRACTS["mart_campaign_response"]

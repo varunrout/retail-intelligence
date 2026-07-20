@@ -3,8 +3,9 @@
 ## Objective
 
 Replace the Phase 10/11 unsupervised baselines with a supervised LightGBM model for
-return fraud and abuse detection, leveraging the `returns_hidden_labels.csv` ground
-truth dataset.
+return fraud and abuse detection, using the `returns_hidden_labels.csv` **synthetic
+seed-derived labels** (not manual annotations; label and features share a generative
+process, so the supervised AP is optimistic — see `docs/modeling_v2_anomaly.md`).
 
 ## Scope and Method
 

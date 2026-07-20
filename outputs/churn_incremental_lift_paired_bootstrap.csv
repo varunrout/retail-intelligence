@@ -1,0 +1,3 @@
+metric,candidate,reference,candidate_value,reference_value,lift,ci95_low,ci95_high,bootstrap_share_lift_positive,ci_excludes_zero,verdict
+roc_auc,lightgbm_v2,logreg_balanced,0.8116281325463737,0.8443198870845107,-0.032691754538137,-0.037602329615592525,-0.027299605405668823,0.0,True,does not beat baseline
+pr_auc,lightgbm_v2,logreg_balanced,0.44772587877567543,0.4972868747855254,-0.04956099600984998,-0.06450437236044952,-0.03384418611494504,0.0,True,does not beat baseline
